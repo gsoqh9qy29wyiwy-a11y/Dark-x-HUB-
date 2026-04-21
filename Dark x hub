@@ -4636,3 +4636,233 @@ Tab5:AddButton({
     end
 })
 
+-- Seção principal
+local Section = Tab6:AddSection({""})
+
+-- Velocidade RGB
+local rgbSpeed = 3
+Tab6:AddSlider({
+    Name = "Velocidade RGB",
+    Description = "Aumenta a velocidade do efeito RGB",
+    Min = 1,
+    Max = 5,
+    Increase = 1,
+    Default = rgbSpeed,
+    Callback = function(Value)
+        rgbSpeed = Value
+    end
+})
+
+-- Função para gerar cor rainbow
+local function getRainbowColor(speedMultiplier)
+    local h = (tick() * speedMultiplier % 5) / 5
+    return Color3.fromHSV(h, 1, 1)
+end
+
+-- Função para disparar eventos Remotes
+local function fireServer(eventName, args)
+    local eventFolder = ReplicatedStorage:FindFirstChild("RE")
+    if eventFolder and eventFolder:FindFirstChild(eventName) then
+        pcall(function()
+            eventFolder[eventName]:FireServer(unpack(args))
+        end)
+    end
+end
+
+-- === Nome + Bio RGB ===
+local nameBioRGBActive = false
+Tab6:AddToggle({
+    Name = "Nome + Bio RGB",
+    Default = false,
+    Callback = function(state)
+        nameBioRGBActive = state
+        if state then
+            task.spawn(function()
+                while nameBioRGBActive and LocalPlayer.Character do
+                    local color = getRainbowColor(rgbSpeed)
+                    fireServer("1RPNam1eColo1r", { "PickingRPNameColor", color })
+                    fireServer("1RPNam1eColo1r", { "PickingRPBioColor", color })
+                    task.wait(0.03)
+                end
+            end)
+        end
+    end
+})
+
+-- === RGB Corpo ===
+local ToggleCorpo = Tab6:AddToggle({
+    Name = "RGB Corpo",
+    Description = "RGB no corpo",
+    Default = false
+})
+
+ToggleCorpo:Callback(function(Value)
+    getgenv().rgbCorpo = Value
+    task.spawn(function()
+        while getgenv().rgbCorpo do
+            local remoteFolder = ReplicatedStorage:FindFirstChild("Remotes")
+            if remoteFolder and remoteFolder:FindFirstChild("ChangeBodyColor") then
+                local color = getRainbowColor(rgbSpeed)
+                pcall(function()
+                    remoteFolder.ChangeBodyColor:FireServer({ BrickColor.new(color) })
+                end)
+            end
+            task.wait(0.1)
+        end
+    end)
+end)
+
+-- === RGB Cabelo ===
+local ToggleCabelo = Tab6:AddToggle({
+    Name = "RGB Cabelo",
+    Description = "RGB no cabelo",
+    Default = false
+})
+
+ToggleCabelo:Callback(function(Value)
+    getgenv().rgbCabelo = Value
+    task.spawn(function()
+        while getgenv().rgbCabelo do
+            fireServer("1Max1y", { "ChangeHairColor2", getRainbowColor(rgbSpeed) })
+            task.wait(0.5)
+        end
+    end)
+end)
+
+-- === RGB Casa e Veículos ===
+local ToggleCasa = Tab6:AddToggle({
+    Name = "RGB Casa",
+    Description = "RGB na casa",
+    Default = false
+})
+
+ToggleCasa:Callback(function(Value)
+    getgenv().rgbCasa = Value
+    task.spawn(function()
+        while getgenv().rgbCasa do
+            fireServer("1Player1sHous1e", { "ColorPickHouse", getRainbowColor(rgbSpeed) })
+            task.wait(0.1)
+        end
+    end)
+end)
+
+local carRGBActive = false
+Tab6:AddToggle({
+    Name = "Carro RGB (Premium)",
+    Description = "Pode causar kick se não for premium!",
+    Default = false,
+    Callback = function(state)
+        carRGBActive = state
+        if state then
+            task.spawn(function()
+                while carRGBActive do
+                    fireServer("1Player1sCa1r", { "PickingCarColor", getRainbowColor(rgbSpeed) })
+                    task.wait(0.03)
+                end
+            end)
+        end
+    end
+})
+
+local ToggleBicicleta = Tab6:AddToggle({
+    Name = "RGB Bicicleta",
+    Description = "RGB na bicicleta",
+    Default = false
+})
+
+ToggleBicicleta:Callback(function(Value)
+    getgenv().rgbBicicleta = Value
+    task.spawn(function()
+        while getgenv().rgbBicicleta do
+            fireServer("1Player1sCa1r", { "NoMotorColor", getRainbowColor(rgbSpeed) })
+            task.wait(0.1)
+        end
+    end)
+end)
+
+-- === RGB Itens (Rádio, Megafone, Rosquinha) ===
+local function fireToolColor(color)
+    local gui = LocalPlayer:FindFirstChild("PlayerGui")
+    if not gui then return end
+    local toolGui = gui:FindFirstChild("ToolGui")
+    if not toolGui then return end
+    local settings = toolGui:FindFirstChild("ToolSettings")
+    if not settings then return end
+    local props = settings:FindFirstChild("Settings"):FindFirstChild("PropsColor")
+    if not props then return end
+    local remote = props:FindFirstChild("SetColor")
+    if remote then
+        pcall(function() remote:FireServer(color) end)
+    end
+end
+
+local radioRGBActive = false
+Tab6:AddToggle({
+    Name = "Rádio RGB",
+    Description = "RGB no rádio",
+    Default = false,
+    Callback = function(state)
+        radioRGBActive = state
+        if state then
+            task.spawn(function()
+                while radioRGBActive do
+                    fireToolColor(getRainbowColor(rgbSpeed))
+                    task.wait(0.05)
+                end
+            end)
+        end
+    end
+})
+
+local ToggleMegafone = Tab6:AddToggle({
+    Name = "RGB Megafone",
+    Description = "RGB no megafone",
+    Default = false
+})
+
+ToggleMegafone:Callback(function(Value)
+    getgenv().rgbMegafone = Value
+    task.spawn(function()
+        while getgenv().rgbMegafone do
+            fireToolColor(getRainbowColor(rgbSpeed))
+            task.wait(0.05)
+        end
+    end)
+end)
+
+local ToggleRosquinha = Tab6:AddToggle({
+    Name = "RGB Rosquinha",
+    Description = "RGB na rosquinha",
+    Default = false
+})
+
+ToggleRosquinha:Callback(function(Value)
+    getgenv().rgbRosquinha = Value
+    task.spawn(function()
+        while getgenv().rgbRosquinha do
+            fireToolColor(getRainbowColor(rgbSpeed))
+            task.wait(0.05)
+        end
+    end)
+end)
+-- [7. LOOPS DE SISTEMA]
+vu10.Heartbeat:Connect(function()
+    pcall(function()
+        if _G.RGBName then
+            local color = Color3.fromHSV((tick() % 5) / 5, 1, 1)
+            vu8.RE["1RPNam1eColo1r"]:FireServer("PickingRPNameColor", color)
+        end
+        
+        if _G.BlackHoleActive then
+            local t = vu6:FindFirstChild(_G.SelectedPlayer)
+            if t and t.Character and t.Character:FindFirstChild("HumanoidRootPart") then
+                BH_Part.CFrame = t.Character.HumanoidRootPart.CFrame
+                for _, v in pairs(vu9:GetDescendants()) do ForcePart(v) end
+            end
+        end
+
+        if viewEnabled then 
+            updateCamera() 
+        end
+    end)
+end)
