@@ -46,15 +46,12 @@ _G.AntiSit = false
 _G.AntiVoid = false
 _G.AntiFling = false 
 _G.AntiLag = false 
-_G.RGBName = false
-_G.RainbowBio = false
 _G.BlackHoleActive = false
 _G.BH_Strength = 200
 _G.IsTrapping = false
 _G.FlingToggle = false
 
 -- [4. VARIÁVEIS E FUNÇÕES DE SUPORTE]
-local rgbSpeed = 3
 local antiToolSit, antiCarSit, antiVehicleCollision = false, false, false
 local keywords = { "bomb", "soccer", "boat" }
 local carKeyword = "car"
