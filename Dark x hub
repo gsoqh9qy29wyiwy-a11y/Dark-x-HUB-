@@ -4634,6 +4634,11 @@ Tab5:AddButton({
         end
     end
 })
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 -- Seção principal
 local Section = Tab6:AddSection({"RBGS"})
 
