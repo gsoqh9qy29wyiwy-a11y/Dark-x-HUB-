@@ -3568,6 +3568,7 @@ end})
 Tab3:AddParagraph({
     Title = "Vai ter mais coisas aqui na próxima atualização",
     Content = ""
+   end
 })
 -- ═══════════════════════════════════════════════════════════════════════════════
 -- ═════════════════════════════════════════ TAB 6: RGB ═════════════════════════════
@@ -3583,24 +3584,30 @@ local function getRainbowColor(speed)
     return Color3.fromHSV(hue, 1, 1)
 end
 
-local function fireServer(folder, args)
+-- Função segura para encontrar e usar remotes
+local function fireRemote(remotePath, args)
     pcall(function()
-        local remoteFolder = ReplicatedStorage:FindFirstChild("Remotes")
-        if not remoteFolder then return end
+        local remote = ReplicatedStorage
+        for part in remotePath:gmatch("[^.]+") do
+            remote = remote:FindFirstChild(part)
+            if not remote then return end
+        end
         
-        local remote = remoteFolder:FindFirstChild(folder)
-        if remote then
-            if remote:IsA("RemoteFunction") then
-                remote:InvokeServer(unpack(args))
-            else
-                remote:FireServer(unpack(args))
-            end
+        if remote:IsA("RemoteFunction") then
+            remote:InvokeServer(unpack(args or {}))
+        elseif remote:IsA("RemoteEvent") then
+            remote:FireServer(unpack(args or {}))
         end
     end)
 end
 
+-- === SEÇÃO TESTE RGB ===
+Tab6:AddSection({"🧪 Sistema RGB"})
+
+Tab6:AddLabel("RGB com animação de cores")
+
 -- === SEÇÃO CORPO RGB ===
-Tab6:AddSection({"Corpo RGB"})
+Tab6:AddSection({"🎨 Corpo RGB"})
 
 local corpoRGBActive = false
 Tab6:AddToggle({
@@ -3609,25 +3616,11 @@ Tab6:AddToggle({
     Default = false,
     Callback = function(Value)
         corpoRGBActive = Value
-        if Value then
-            task.spawn(function()
-                while corpoRGBActive do
-                    pcall(function()
-                        local remoteFolder = ReplicatedStorage:FindFirstChild("Remotes")
-                        if remoteFolder and remoteFolder:FindFirstChild("ChangeBodyColor") then
-                            local color = getRainbowColor(rgbSpeed)
-                            remoteFolder.ChangeBodyColor:FireServer({ BrickColor.new(color) })
-                        end
-                    end)
-                    task.wait(0.1)
-                end
-            end)
-        end
     end
 })
 
 -- === SEÇÃO CABELO RGB ===
-Tab6:AddSection({"Cabelo RGB"})
+Tab6:AddSection({"💇 Cabelo RGB"})
 
 local cabeloRGBActive = false
 Tab6:AddToggle({
@@ -3636,19 +3629,11 @@ Tab6:AddToggle({
     Default = false,
     Callback = function(Value)
         cabeloRGBActive = Value
-        if Value then
-            task.spawn(function()
-                while cabeloRGBActive do
-                    fireServer("1Max1y", { "ChangeHairColor2", getRainbowColor(rgbSpeed) })
-                    task.wait(0.5)
-                end
-            end)
-        end
     end
 })
 
 -- === SEÇÃO CASA RGB ===
-Tab6:AddSection({"Casa RGB"})
+Tab6:AddSection({"🏠 Casa RGB"})
 
 local casaRGBActive = false
 Tab6:AddToggle({
@@ -3660,8 +3645,8 @@ Tab6:AddToggle({
         if Value then
             task.spawn(function()
                 while casaRGBActive do
-                    fireServer("1Player1sHous1e", { "ColorPickHouse", getRainbowColor(rgbSpeed) })
-                    task.wait(0.1)
+                    fireRemote("Remotes.1Player1sHous1e.ColorPickHouse", { getRainbowColor(rgbSpeed) })
+                    task.wait(0.5)
                 end
             end)
         end
@@ -3669,20 +3654,20 @@ Tab6:AddToggle({
 })
 
 -- === SEÇÃO CARRO RGB ===
-Tab6:AddSection({"Carro RGB"})
+Tab6:AddSection({"🚗 Carro RGB"})
 
 local carRGBActive = false
 Tab6:AddToggle({
     Name = "Carro RGB",
-    Description = "Carro com cores RGB (requer Premium)",
+    Description = "⚠️ Carro com cores RGB",
     Default = false,
     Callback = function(state)
         carRGBActive = state
         if state then
             task.spawn(function()
                 while carRGBActive do
-                    fireServer("1Player1sCa1r", { "PickingCarColor", getRainbowColor(rgbSpeed) })
-                    task.wait(0.03)
+                    fireRemote("Remotes.1Player1sCa1r.PickingCarColor", { getRainbowColor(rgbSpeed) })
+                    task.wait(0.1)
                 end
             end)
         end
@@ -3690,7 +3675,7 @@ Tab6:AddToggle({
 })
 
 -- === SEÇÃO BICICLETA RGB ===
-Tab6:AddSection({"Bicicleta RGB"})
+Tab6:AddSection({"🚴 Bicicleta RGB"})
 
 local bicicletaRGBActive = false
 Tab6:AddToggle({
@@ -3702,7 +3687,7 @@ Tab6:AddToggle({
         if Value then
             task.spawn(function()
                 while bicicletaRGBActive do
-                    fireServer("1Player1sCa1r", { "NoMotorColor", getRainbowColor(rgbSpeed) })
+                    fireRemote("Remotes.1Player1sCa1r.NoMotorColor", { getRainbowColor(rgbSpeed) })
                     task.wait(0.1)
                 end
             end)
@@ -3710,87 +3695,8 @@ Tab6:AddToggle({
     end
 })
 
--- === SEÇÃO ITEMS RGB ===
-Tab6:AddSection({"Items RGB"})
-
-local function fireToolColor(color)
-    pcall(function()
-        local gui = LocalPlayerRGB:FindFirstChild("PlayerGui")
-        if not gui then return end
-        local toolGui = gui:FindFirstChild("ToolGui")
-        if not toolGui then return end
-        local settings = toolGui:FindFirstChild("ToolSettings")
-        if not settings then return end
-        local props = settings:FindFirstChild("Settings")
-        if not props then return end
-        local propsColor = props:FindFirstChild("PropsColor")
-        if not propsColor then return end
-        local remote = propsColor:FindFirstChild("SetColor")
-        if remote then
-            remote:FireServer(color)
-        end
-    end)
-end
-
--- Rádio RGB
-local radioRGBActive = false
-Tab6:AddToggle({
-    Name = "Rádio RGB",
-    Description = "Rádio com cores RGB",
-    Default = false,
-    Callback = function(state)
-        radioRGBActive = state
-        if state then
-            task.spawn(function()
-                while radioRGBActive do
-                    fireToolColor(getRainbowColor(rgbSpeed))
-                    task.wait(0.05)
-                end
-            end)
-        end
-    end
-})
-
--- Megafone RGB
-local megafoneRGBActive = false
-Tab6:AddToggle({
-    Name = "RGB Megafone",
-    Description = "Megafone com cores RGB",
-    Default = false,
-    Callback = function(Value)
-        megafoneRGBActive = Value
-        if Value then
-            task.spawn(function()
-                while megafoneRGBActive do
-                    fireToolColor(getRainbowColor(rgbSpeed))
-                    task.wait(0.05)
-                end
-            end)
-        end
-    end
-})
-
--- Rosquinha RGB
-local rosquinhaRGBActive = false
-Tab6:AddToggle({
-    Name = "RGB Rosquinha",
-    Description = "Rosquinha com cores RGB",
-    Default = false,
-    Callback = function(Value)
-        rosquinhaRGBActive = Value
-        if Value then
-            task.spawn(function()
-                while rosquinhaRGBActive do
-                    fireToolColor(getRainbowColor(rgbSpeed))
-                    task.wait(0.05)
-                end
-            end)
-        end
-    end
-})
-
 -- === SEÇÃO CONFIGURAÇÕES RGB ===
-Tab6:AddSection({"Configurações RGB"})
+Tab6:AddSection({"⚙️ Configurações RGB"})
 
 Tab6:AddSlider({
     Name = "Velocidade RGB",
@@ -3804,65 +3710,55 @@ Tab6:AddSlider({
 })
 
 -- === PREDEFINIÇÕES DE COR ===
-Tab6:AddSection({"Cores Rápidas"})
+Tab6:AddSection({"🎨 Cores Rápidas"})
+
+local function applyColor(color)
+    fireRemote("Remotes.1Player1sHous1e.ColorPickHouse", { color })
+    fireRemote("Remotes.1Player1sCa1r.PickingCarColor", { color })
+end
 
 Tab6:AddButton({
-    Name = "Vermelho",
+    Name = "❤️ Vermelho",
     Callback = function()
-        rgbSpeed = 0
         local color = Color3.fromRGB(255, 0, 0)
-        fireServer("1Max1y", { "ChangeHairColor2", color })
-        fireServer("1Player1sHous1e", { "ColorPickHouse", color })
-        fireServer("1Player1sCa1r", { "PickingCarColor", color })
+        applyColor(color)
     end
 })
 
 Tab6:AddButton({
-    Name = "Azul",
+    Name = "💙 Azul",
     Callback = function()
-        rgbSpeed = 0
         local color = Color3.fromRGB(0, 0, 255)
-        fireServer("1Max1y", { "ChangeHairColor2", color })
-        fireServer("1Player1sHous1e", { "ColorPickHouse", color })
-        fireServer("1Player1sCa1r", { "PickingCarColor", color })
+        applyColor(color)
     end
 })
 
 Tab6:AddButton({
-    Name = "Verde",
+    Name = "💚 Verde",
     Callback = function()
-        rgbSpeed = 0
         local color = Color3.fromRGB(0, 255, 0)
-        fireServer("1Max1y", { "ChangeHairColor2", color })
-        fireServer("1Player1sHous1e", { "ColorPickHouse", color })
-        fireServer("1Player1sCa1r", { "PickingCarColor", color })
+        applyColor(color)
     end
 })
 
 Tab6:AddButton({
-    Name = "Amarelo",
+    Name = "💛 Amarelo",
     Callback = function()
-        rgbSpeed = 0
         local color = Color3.fromRGB(255, 255, 0)
-        fireServer("1Max1y", { "ChangeHairColor2", color })
-        fireServer("1Player1sHous1e", { "ColorPickHouse", color })
-        fireServer("1Player1sCa1r", { "PickingCarColor", color })
+        applyColor(color)
     end
 })
 
 Tab6:AddButton({
-    Name = "Roxo",
+    Name = "💜 Roxo",
     Callback = function()
-        rgbSpeed = 0
         local color = Color3.fromRGB(128, 0, 128)
-        fireServer("1Max1y", { "ChangeHairColor2", color })
-        fireServer("1Player1sHous1e", { "ColorPickHouse", color })
-        fireServer("1Player1sCa1r", { "PickingCarColor", color })
+        applyColor(color)
     end
 })
 
 Tab6:AddButton({
-    Name = "Rainbow Ativado",
+    Name = "🌈 Rainbow Ativado",
     Callback = function()
         rgbSpeed = 1
         corpoRGBActive = true
@@ -3870,32 +3766,39 @@ Tab6:AddButton({
         casaRGBActive = true
         carRGBActive = true
         bicicletaRGBActive = true
-        radioRGBActive = true
-        megafoneRGBActive = true
-        rosquinhaRGBActive = true
+        
+        game:GetService("StarterGui"):SetCore("SendNotification", {
+            Title = "🌈 Rainbow Ativado",
+            Text = "Todos os RGBs foram ativados!",
+            Duration = 3
+        })
     end
 })
 
 Tab6:AddButton({
-    Name = "Desativar Todos RGB",
+    Name = "❌ Desativar Todos RGB",
     Callback = function()
         corpoRGBActive = false
         cabeloRGBActive = false
         casaRGBActive = false
         carRGBActive = false
         bicicletaRGBActive = false
-        radioRGBActive = false
-        megafoneRGBActive = false
-        rosquinhaRGBActive = false
         rgbSpeed = 0.5
         
         game:GetService("StarterGui"):SetCore("SendNotification", {
-            Title = "RGB Desativado",
+            Title = "✅ RGB Desativado",
             Text = "Todos os efeitos RGB foram desativados!",
             Duration = 3
         })
     end
 })
+
+-- === LOOP PRINCIPAL RGB ===
+local rgbLoop = RunService.Heartbeat:Connect(function()
+    if corpoRGBActive or cabeloRGBActive or casaRGBActive or carRGBActive or bicicletaRGBActive then
+        -- Lógica opcional para atualizar cores a cada frame
+    end
+end)
 
 -- ═══════════════════════════════════════════════════════════════════════════════
 local SelectHouse = nil
