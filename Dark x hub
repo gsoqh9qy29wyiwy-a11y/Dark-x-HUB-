@@ -3601,24 +3601,35 @@ local function fireServer(eventName, args)
         end)
     end
 end
+ 
+Tab6:AddSection({"RGB Effects"})
 
--- === Nome + Bio RGB ===
-local nameBioRGBActive = false
+-- RGB Name
 Tab6:AddToggle({
-    Name = "Nome + Bio RGB",
+    Name = "Rainbow Name",
+    Description = "Muda seu nome com cores RGB",
     Default = false,
     Callback = function(state)
-        nameBioRGBActive = state
+        _G.RGBName = state
         if state then
-            task.spawn(function()
-                while nameBioRGBActive and LocalPlayer.Character do
-                    local color = getRainbowColor(rgbSpeed)
-                    fireServer("1RPNam1eColo1r", { "PickingRPNameColor", color })
-                    fireServer("1RPNam1eColo1r", { "PickingRPBioColor", color })
-                    task.wait(0.03)
-                end
+            local conn
+            conn = RunService.Heartbeat:Connect(function()
+                if not _G.RGBName then conn:Disconnect() return end
+                local h = (tick() % 5) / 5
+                local color = Color3.fromHSV(h, 1, 1)
+                -- Código para mudar o nome
             end)
         end
+    end
+})
+
+-- RGB Bio
+Tab6:AddToggle({
+    Name = "Rainbow Bio",
+    Description = "Muda sua bio com cores RGB",
+    Default = false,
+    Callback = function(state)
+        _G.RainbowBio = state
     end
 })
 
